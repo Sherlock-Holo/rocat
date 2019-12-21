@@ -46,11 +46,9 @@ pub fn run() {
     }).collect();
 }
 
-fn parse_from(mut s: String) -> Box<dyn Iterator<Item=Result<Box<dyn ReadWrite>, io::Error>>> {
+fn parse_from(s: String) -> Box<dyn Iterator<Item=Result<Box<dyn ReadWrite>, io::Error>>> {
     if s.to_uppercase().starts_with("TCP:") {
-        s = s.replace("TCP:", "");
-
-        let listener = match net::TcpListener::new(s) {
+        let listener = match net::TcpListener::new(&s[4..]) {
             Err(err) => {
                 eprintln!("listen failed: {}", err);
                 process::exit(1)
@@ -65,11 +63,9 @@ fn parse_from(mut s: String) -> Box<dyn Iterator<Item=Result<Box<dyn ReadWrite>,
     Box::new(file::File::new(s, true))
 }
 
-fn parse_to(mut s: String) -> Box<dyn Iterator<Item=Result<Box<dyn ReadWrite>, io::Error>>> {
+fn parse_to(s: String) -> Box<dyn Iterator<Item=Result<Box<dyn ReadWrite>, io::Error>>> {
     if s.to_uppercase().starts_with("TCP:") {
-        s = s.replace("TCP:", "");
-
-        return Box::new(net::TcpStream::new(s));
+        return Box::new(net::TcpStream::new(String::from(&s[4..])));
     }
 
     Box::new(file::File::new(s, false))
